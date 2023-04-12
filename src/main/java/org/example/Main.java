@@ -21,6 +21,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -35,14 +36,15 @@ public class Main implements ActionListener {
     private static final double LONG_MIN = -180;
     private static final double LONG_MAX = 180;
     private JFrame frame;
-    private JButton importButton, showButton, applyButton, kmeansButton, showClusterButton;
+    private JButton importButton, showButton, applyButton, kmeansButton, showClusterButton, map;
     private JTable table;
-    private int numCluster = 4;
+    private int numCluster = 8;
     private JTextField numClusterField, distanceField;
-    private double distanceThreshold = 1;
+    private double distanceThreshold = 1000;
     private List<Data> dataList = new ArrayList<>();
     private List<ClusterO> clusterOS = new ArrayList<>();
     static final Gson gson = new Gson();
+    private String mapUrl = "https://www.google.com/maps/dir";
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -86,20 +88,20 @@ public class Main implements ActionListener {
         actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));
         JPanel configPanel = new JPanel(new FlowLayout());
         JLabel numClusterLabel = new JLabel("Number of clusters:");
-        numClusterField = new JTextField();
+        numClusterField = new JTextField(String.valueOf(numCluster));
         numClusterField.setPreferredSize(new Dimension(100, 20));
 
 
-        JLabel distanceLabel = new JLabel("Distance from clusters:");
-        distanceField = new JTextField();
-        distanceField.setPreferredSize(new Dimension(100, 20));
+//        JLabel distanceLabel = new JLabel("Distance from clusters:");
+//        distanceField = new JTextField(String.valueOf(distanceThreshold));
+//        distanceField.setPreferredSize(new Dimension(100, 20));
         applyButton = new JButton("Apply");
         applyButton.addActionListener(this);
 
         configPanel.add(numClusterLabel);
         configPanel.add(numClusterField);
-        configPanel.add(distanceLabel);
-        configPanel.add(distanceField);
+//        configPanel.add(distanceLabel);
+//        configPanel.add(distanceField);
         configPanel.add(applyButton);
 
 
@@ -111,6 +113,10 @@ public class Main implements ActionListener {
         showClusterButton = new JButton("Cluster");
         showClusterButton.addActionListener(this);
         configPanel.add(showClusterButton);
+//showClusterButton
+        map = new JButton("Map");
+        map.addActionListener(this);
+        configPanel.add(map);
 
         actionPanel.add(configPanel);
 
@@ -124,7 +130,7 @@ public class Main implements ActionListener {
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel files", "xlsx", "xls");
         fileChooser.setFileFilter(filter);
         int returnVal = fileChooser.showOpenDialog(null);
-
+        dataList = new ArrayList<>();
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
 
@@ -145,14 +151,18 @@ public class Main implements ActionListener {
                     Cell address = row.getCell(2);
                     data.setAddress(address.getStringCellValue());
                     Cell longitude = row.getCell(3);
+                    longitude.setCellType(CellType.STRING);
                     data.setLongitude(Double.parseDouble(longitude.getStringCellValue()));
                     Cell latitude = row.getCell(4);
-                    data.setLatitude(Double.parseDouble(String.valueOf(latitude.getNumericCellValue())));
+                    latitude.setCellType(CellType.STRING);
+                    data.setLatitude(Double.parseDouble(String.valueOf(latitude.getStringCellValue())));
                     Cell distance = row.getCell(5);
-                    data.setDistance(Double.parseDouble(String.valueOf(distance.getNumericCellValue())));
+                    distance.setCellType(CellType.STRING);
+                    data.setDistance(Double.parseDouble(String.valueOf(distance.getStringCellValue())));
                     dataList.add(data);
                 }
                 System.out.println(gson.toJson(dataList));
+                JOptionPane.showMessageDialog(frame, "Imported " + dataList.size() + " bản ghi ");
                 workbook.close();
                 inputStream.close();
             } catch (IOException e) {
@@ -220,6 +230,7 @@ public class Main implements ActionListener {
         model.addColumn("Địa chỉ");
         model.addColumn("Kinh độ");
         model.addColumn("Vĩ độ");
+        model.addColumn("Khoảng cách tâm");
 
         for (ClusterO clusterO : clusterOS) {
             List<Data> dataList = clusterO.getClusterDataList();
@@ -234,13 +245,14 @@ public class Main implements ActionListener {
                 row[5] = data1.getAddress();
                 row[6] = data1.getLongitude();
                 row[7] = data1.getLatitude();
+                row[8] = data1.getDistance();
                 model.addRow(row);
 
             }
         }
 //        // Tạo một mảng chứa tên cột của bảng
         String[] columnNamesView = {"Id Cụm", "Kinh Độ Cụm",
-                "Vĩ Độ Cụm", "Id Điểm", "Tên điểm", "Địa chỉ", "Kinh độ", "Vĩ độ"};
+                "Vĩ Độ Cụm", "Id Điểm", "Tên điểm", "Địa chỉ", "Kinh độ", "Vĩ độ", "Khoảng cách tâm"};
 //        // Tạo bảng với dữ liệu và tên cột đã chuẩn bị
 //        JTable table = new JTable(data, columnNamesView);
         table.setModel(model);
@@ -265,11 +277,11 @@ public class Main implements ActionListener {
         } else if (e.getSource() == applyButton) {
             try {
                 numCluster = Integer.parseInt(numClusterField.getText());
-                distanceThreshold = Double.parseDouble(distanceField.getText());
+//                distanceThreshold = Double.parseDouble(distanceField.getText());
                 // Thực hiện các thao tác liên quan đến việc sử dụng các tham số
                 // Như phân cụm bằng thuật toán Kmean với số lượng tâm cụm và khoảng cách cần thiết
-                System.out.println("Num cluster:" + numCluster);
-                System.out.println("Distance:" + distanceThreshold);
+//                System.out.println("Num cluster:" + numCluster);
+//                System.out.println("Distance:" + distanceThreshold);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(frame, "Invalid input", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -279,8 +291,33 @@ public class Main implements ActionListener {
 //            double distance = Double.parseDouble(distanceField.getText());
             clusterOS = new ArrayList<>();
             kMeansCluster();
+            //Calculate to centroids
+            for (ClusterO clusterO : clusterOS) {
+                double centLong = clusterO.getLongitude();
+                double centLat = clusterO.getLatitude();
+                for (Data data : clusterO.getClusterDataList()) {
+                    double distance = calculateDistance(centLat, centLong, data.getLatitude(), data.getLongitude());
+                    long distanceM = Math.round(distance * 1000);
+                    data.setDistance(distanceM);
+//                    if (distanceM > distanceThreshold) {
+//                        numCluster = numCluster + 1;
+//                        clusterOS = new ArrayList<>();
+//                        kMeansCluster();
+//                        frame.revalidate();
+//                        frame.repaint();
+//                    }
+                }
+
+            }
+            JOptionPane.showMessageDialog(frame, "Success");
+
         } else if (e.getSource() == showClusterButton) {
             showDataClusters();
+        } else if (e.getSource() == map) {
+            for (ClusterO clusterO : clusterOS) {
+                mapUrl = mapUrl + "/'" + clusterO.getLongitude() + "," + clusterO.getLatitude() + "'";
+            }
+            System.out.println(mapUrl);
         }
 
     }
@@ -294,12 +331,13 @@ public class Main implements ActionListener {
             // Áp dụng thuật toán KMeans
             SimpleKMeans kmeans = new SimpleKMeans();
             kmeans.setNumClusters(numCluster); // số cụm cần phân
-            kmeans.setMaxIterations(500);
-            kmeans.setDistanceFunction(new EuclideanDistance());
+//            kmeans.setDistanceFunction(new EuclideanDistance());
+            // Set the distance function
+            EuclideanDistance euclideanDistance = new EuclideanDistance();
+            euclideanDistance.setOptions(new String[]{"-D", "5.0"});
+            kmeans.setDistanceFunction(euclideanDistance);
+            kmeans.setMaxIterations(100);
             kmeans.buildClusterer(instances);
-
-            //Kiểm tra tâm cụm hợp lệ
-
 
             // Lấy các tâm cụm và in ra
             Instances centroids = kmeans.getClusterCentroids();
@@ -308,7 +346,7 @@ public class Main implements ActionListener {
                 System.out.println("Centroid " + (i + 1) + ": " + centroids.instance(i));
                 ClusterO clusterO = new ClusterO();
                 clusterO.setId(String.valueOf(i));
-                 Instance instance = centroids.instance(i);
+                Instance instance = centroids.instance(i);
                 clusterO.setLongitude(instance.value(0));
                 clusterO.setLatitude(instance.value(1));
                 clusterList.add(clusterO);
@@ -328,13 +366,22 @@ public class Main implements ActionListener {
             System.out.println(gson.toJson(clusterList));
             //Apply new centroids
             for (int i = 0; i < centroids.numInstances(); i++) {
-                ClusterO clusterO =clusterList.get(i);
+                ClusterO clusterO = clusterList.get(i);
                 Instance instance = centroids.instance(i);
                 clusterO.setLongitude(instance.value(0));
                 clusterO.setLatitude(instance.value(1));
-                clusterOS.add(i,clusterO);
+                clusterOS.add(i, clusterO);
             }
+            //Calculate to centroids
+            for (ClusterO clusterO : clusterOS) {
+                double centLong = clusterO.getLongitude();
+                double centLat = clusterO.getLatitude();
+                for (Data data : clusterO.getClusterDataList()) {
+                    double distance = calculateDistance(centLat, centLong, data.getLatitude(), data.getLongitude());
+                    data.setDistance(Math.round(distance * 1000));
+                }
 
+            }
 
 
             // Hiển thị các cụm trên bản đồ
@@ -455,4 +502,6 @@ public class Main implements ActionListener {
         }
         return dataset;
     }
+
+
 }
