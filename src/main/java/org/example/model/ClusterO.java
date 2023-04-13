@@ -13,6 +13,8 @@ public class ClusterO  {
     private String id;
     private double longitude;
     private double latitude;
+    private String address;
+    private double distanceToTarget;
     private List<Data> clusterDataList = new ArrayList<>();
 
 }
