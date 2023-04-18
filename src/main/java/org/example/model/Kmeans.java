@@ -157,6 +157,13 @@ public class Kmeans {
                     latitude = geoAddressData.getGeometry().getLocation().getLat();
                     addressCluster = geoAddressData.getFormatted_address();
                 }
+                List<GeoAddressData> addressDatas = new ArrayList<>();
+                int count = 0;
+                for (GeoAddressData result : response.getResults()) {
+                    if (count > 0 && count < 4)
+                        addressDatas.add(result);
+                    count += 1;
+                }
                 cluster.setGeoAddresses(response.getResults());
             }
             cluster.setLongitude(longitude);
@@ -173,23 +180,26 @@ public class Kmeans {
     static final Gson gson = new Gson();
 
     public static GeoAddressResponse getAddress(double latitude, double longitude) {
-//        String url = "https://rsapi.goong.io/Geocode?latlng=" + latitude + "," + longitude + "&api_key=" + API_KEY;
-//        HttpResponse httpresponse = null;
-//        try (final CloseableHttpClient httpclient = createAcceptSelfSignedCertificateClient()) {
-//            HttpGet httpGet = new HttpGet(url);
-//            httpresponse = httpclient.execute(httpGet);
-//            int statusCode = httpresponse.getStatusLine().getStatusCode();
-//            String response = EntityUtils.toString(httpresponse.getEntity(), "UTF-8");
-//            System.out.println("========GET RESPONSE=========" + response);
-//            if (statusCode == HttpStatus.SC_OK) {
-//                GeoAddressResponse addressResponse = gson.fromJson(response, GeoAddressResponse.class);
-//                return addressResponse;
-//            } else {
-//                System.out.println("=========ServerResponse HttpCode==========: " + statusCode + ". body: " + response);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        boolean isGetAddress = false;
+        if (!isGetAddress || latitude == 0 || longitude == 0)
+            return null;
+        String url = "https://rsapi.goong.io/Geocode?latlng=" + latitude + "," + longitude + "&api_key=" + API_KEY;
+        HttpResponse httpresponse = null;
+        try (final CloseableHttpClient httpclient = createAcceptSelfSignedCertificateClient()) {
+            HttpGet httpGet = new HttpGet(url);
+            httpresponse = httpclient.execute(httpGet);
+            int statusCode = httpresponse.getStatusLine().getStatusCode();
+            String response = EntityUtils.toString(httpresponse.getEntity(), "UTF-8");
+            System.out.println("========GET RESPONSE=========" + response);
+            if (statusCode == HttpStatus.SC_OK) {
+                GeoAddressResponse addressResponse = gson.fromJson(response, GeoAddressResponse.class);
+                return addressResponse;
+            } else {
+                System.out.println("=========ServerResponse HttpCode==========: " + statusCode + ". body: " + response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
