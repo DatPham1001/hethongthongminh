@@ -14,6 +14,7 @@ public class ClusterO  {
     private double longitude;
     private double latitude;
     private String address;
+    private List<GeoAddressData> geoAddresses;
     private double distanceToTarget;
     private List<Data> clusterDataList = new ArrayList<>();
 

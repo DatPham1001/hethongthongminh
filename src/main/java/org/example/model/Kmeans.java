@@ -1,11 +1,30 @@
 package org.example.model;
 
+import com.google.gson.Gson;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Kmeans {
+    private static String API_KEY = "lGAhx8EUsijWwm0ck5ORJgTMWzb1wAkh5cBVf7xv";
+    private String targetCoordinate = "21.005038,105.845630";
     DecimalFormat decimalFormat = new DecimalFormat("#.###");
     private int k;
     private int maxRun = 100;
@@ -85,6 +104,8 @@ public class Kmeans {
 //        update distance to centroid
         int acceptedWrongNum = 5;
         int acceptedWrongCount = 0;
+
+
         for (ClusterO cluster : clusters) {
             for (Data data : cluster.getClusterDataList()) {
                 double distance = calculateDistance(data.getLatitude(),
@@ -112,11 +133,68 @@ public class Kmeans {
             }
 
         }
+//        Add cluster info
+        clusters = addClusterInfo(clusters);
         return clusters;
     }
 
+    private List<ClusterO> addClusterInfo(List<ClusterO> clusters) {
+        String[] targetCoordinates = targetCoordinate.split(",");
+        for (ClusterO cluster : clusters) {
+            double longitude = cluster.getLongitude();
+            double latitude = cluster.getLatitude();
+            String addressCluster = "";
+            GeoAddressResponse response = getAddress(latitude, longitude);
+            if (response != null && response.getStatus().equalsIgnoreCase("OK")) {
+                if (response.getResults().size() == 0) {
+                    GeoAddressData geoAddressData = response.getResults().get(0);
+                    longitude = geoAddressData.getGeometry().getLocation().getLng();
+                    latitude = geoAddressData.getGeometry().getLocation().getLat();
+                    addressCluster = geoAddressData.getFormatted_address();
+                } else if (response.getResults().size() > 1) {
+                    GeoAddressData geoAddressData = response.getResults().get(1);
+                    longitude = geoAddressData.getGeometry().getLocation().getLng();
+                    latitude = geoAddressData.getGeometry().getLocation().getLat();
+                    addressCluster = geoAddressData.getFormatted_address();
+                }
+                cluster.setGeoAddresses(response.getResults());
+            }
+            cluster.setLongitude(longitude);
+            cluster.setLatitude(latitude);
+            cluster.setAddress(addressCluster);
+            double distanceToTarget = calculateDistance(latitude, longitude
+                    , Double.parseDouble(targetCoordinates[0]), Double.parseDouble(targetCoordinates[1]));
+            cluster.setDistanceToTarget(Double.parseDouble(decimalFormat.format(distanceToTarget)));
+
+        }
+        return clusters;
+    }
+
+    static final Gson gson = new Gson();
+
+    public static GeoAddressResponse getAddress(double latitude, double longitude) {
+//        String url = "https://rsapi.goong.io/Geocode?latlng=" + latitude + "," + longitude + "&api_key=" + API_KEY;
+//        HttpResponse httpresponse = null;
+//        try (final CloseableHttpClient httpclient = createAcceptSelfSignedCertificateClient()) {
+//            HttpGet httpGet = new HttpGet(url);
+//            httpresponse = httpclient.execute(httpGet);
+//            int statusCode = httpresponse.getStatusLine().getStatusCode();
+//            String response = EntityUtils.toString(httpresponse.getEntity(), "UTF-8");
+//            System.out.println("========GET RESPONSE=========" + response);
+//            if (statusCode == HttpStatus.SC_OK) {
+//                GeoAddressResponse addressResponse = gson.fromJson(response, GeoAddressResponse.class);
+//                return addressResponse;
+//            } else {
+//                System.out.println("=========ServerResponse HttpCode==========: " + statusCode + ". body: " + response);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        return null;
+    }
+
     public static double calculateDistance(double lat1, double long1, double lat2, double long2) {
-        double R = 6371000; // Earth radius in km
+        double R = 6371000; // Earth radius in m
         double dLat = Math.toRadians(lat2 - lat1);
         double dLong = Math.toRadians(long2 - long1);
 
@@ -128,5 +206,14 @@ public class Kmeans {
         double d = R * c;
 
         return d;
+    }
+
+
+    private static CloseableHttpClient createAcceptSelfSignedCertificateClient()
+            throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+        SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial(new TrustSelfSignedStrategy()).build();
+        HostnameVerifier allowAllHosts = new NoopHostnameVerifier();
+        SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext, allowAllHosts);
+        return HttpClients.custom().setSSLSocketFactory(connectionFactory).build();
     }
 }

@@ -53,7 +53,8 @@ public class Main implements ActionListener {
     private JButton importButton, showButton, applyButton, kmeansButton, showClusterButton, map, clusterAndAmount;
     private JTable table;
     private int numCluster = 8;
-    private JTextField numClusterField, distanceField;
+    private int numSeats = 16;
+    private JTextField numClusterField, distanceField, numSeatsField;
     private double distanceThreshold = 1000;
     private List<Data> dataList = new ArrayList<>();
     private List<ClusterO> clusterOS = new ArrayList<>();
@@ -81,7 +82,7 @@ public class Main implements ActionListener {
 
     private void initialize() {
         Data[] datas = gson.fromJson("[{\"id\":\"1\",\"name\":\"Nguyễn Hữu Ánh\",\"address\":\"Số nhà 45, ngõ 120, Láng Hạ, Đống Đa, Hà Nội\",\"longitude\":105.81032244281,\"latitude\":21.013289547968125,\"distance\":4.4},{\"id\":\"2\",\"name\":\"Phạm Thu Hà\",\"address\":\"Số nhà 10, ngõ 172,Pháo Đài Láng, Đống Đa, Hà Nội\",\"longitude\":105.806701408824,\"latitude\":21.02216340050488,\"distance\":4.8},{\"id\":\"3\",\"name\":\"Trần Thanh Tùng\",\"address\":\"Số nhà 17, ngõ 3, Kim Mã, Ba Đình, Hà Nội\",\"longitude\":105.822305878556,\"latitude\":21.033295824229658,\"distance\":3.2},{\"id\":\"4\",\"name\":\"Nguyễn Thị Thanh\",\"address\":\"Số nhà 102, đường Cầu Giấy, Cầu Giấy, Hà Nội\",\"longitude\":105.791127076644,\"latitude\":21.035279463982057,\"distance\":6.8},{\"id\":\"5\",\"name\":\"Trần Văn Đông\",\"address\":\"Số nhà 87, đường Nguyễn Khánh Toàn, Cầu Giấy, Hà Nội\",\"longitude\":105.795255224729,\"latitude\":21.043626214736467,\"distance\":5.7},{\"id\":\"6\",\"name\":\"Vũ Thị Anh\",\"address\":\"Số nhà 56, đường Trần Hưng Đạo, Hoàn Kiếm, Hà Nội\",\"longitude\":105.844420055303,\"latitude\":21.024991980344527,\"distance\":2.5},{\"id\":\"7\",\"name\":\"Lê Thị Lan\",\"address\":\"Số nhà 34, ngõ 163, Tây Sơn, Đống Đa, Hà Nội\",\"longitude\":105.812927288679,\"latitude\":21.02040270485661,\"distance\":3.6},{\"id\":\"8\",\"name\":\"Đỗ Minh Hiền\",\"address\":\"Số nhà 49, ngõ 12, Đặng Thai Mai, Tây Hồ, Hà Nội\",\"longitude\":105.827454503227,\"latitude\":21.049874313087408,\"distance\":5.2},{\"id\":\"9\",\"name\":\"Hoàng Văn Nam\",\"address\":\"Số nhà 34, ngõ 44, phố Lê Văn Thiêm, Nhân Chính, Thanh Xuân, Hà Nội\",\"longitude\":105.801562186119,\"latitude\":21.005800856669975,\"distance\":3.9},{\"id\":\"10\",\"name\":\"Tuyết Ngân Vương\",\"address\":\"64 Nguyễn Trãi, Thanh Xuân, Hà Nội\",\"longitude\":105.8141240628,\"latitude\":21.004989829364796,\"distance\":4.3},{\"id\":\"11\",\"name\":\"Trúc Mai Lâm\",\"address\":\"12 Ngõ 87 Láng Hạ, Đống Đa, Hà Nội\",\"longitude\":105.812843463,\"latitude\":21.008847514699834,\"distance\":3.9},{\"id\":\"12\",\"name\":\"Đình Duy Nguyễn\",\"address\":\"29 Võ Chí Công, Xuân La, Tây Hồ, Hà Nội\",\"longitude\":105.8029101701,\"latitude\":21.06745471409359,\"distance\":5.9},{\"id\":\"13\",\"name\":\"Minh Châu Hồ\",\"address\":\"23B Ngõ 3/54, Tổ 11, Phố Vọng, Hai Bà Trưng, Hà Nội\",\"longitude\":105.843757166,\"latitude\":20.998898210732417,\"distance\":4.1}]"
-                ,Data[].class);
+                , Data[].class);
         dataList = new ArrayList<Data>(Arrays.asList(datas));
         frame = new JFrame();
         frame.setBounds(400, 250, 800, 500);
@@ -105,16 +106,23 @@ public class Main implements ActionListener {
         JPanel actionPanel = new JPanel();
         actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));
         JPanel configPanel = new JPanel(new FlowLayout());
-        JLabel numClusterLabel = new JLabel("Number of clusters:");
-        numClusterField = new JTextField(String.valueOf(numCluster));
-        numClusterField.setPreferredSize(new Dimension(100, 20));
+
+
+//        JLabel numClusterLabel = new JLabel("Number of clusters:");
+//        numClusterField = new JTextField(String.valueOf(numCluster));
+//        numClusterField.setPreferredSize(new Dimension(100, 20));
+        JLabel numSeatsLabel = new JLabel("Number of seats:");
+        numSeatsField = new JTextField(String.valueOf(numSeats));
+        numSeatsField.setPreferredSize(new Dimension(100, 20));
 
 
         applyButton = new JButton("Apply");
         applyButton.addActionListener(this);
 
-        configPanel.add(numClusterLabel);
-        configPanel.add(numClusterField);
+        configPanel.add(numSeatsLabel);
+        configPanel.add(numSeatsField);
+//        configPanel.add(numClusterLabel);
+//        configPanel.add(numClusterField);
 //        configPanel.add(distanceLabel);
 //        configPanel.add(distanceField);
         configPanel.add(applyButton);
@@ -349,8 +357,45 @@ public class Main implements ActionListener {
 //            int numCluster = Integer.parseInt(numClusterField.getText());
 //            double distance = Double.parseDouble(distanceField.getText());
 //            clusterOS = new ArrayList<>();
-            Kmeans kmeans = new Kmeans(numCluster,dataList);
+            numCluster = (dataList.size() + numSeats - 1) / numSeats;
+            Kmeans kmeans = new Kmeans(numCluster, dataList);
             clusterOS = kmeans.classify();
+            List<ClusterO> newClusters = new ArrayList<>();
+            newClusters.addAll(clusterOS);
+            boolean notDone = true;
+            while (notDone) {
+                notDone = false;
+                for (int i = 0; i < clusterOS.size(); i++) {
+                    ClusterO clusterO = clusterOS.get(i);
+                    List<Data> addDataList = clusterO.getClusterDataList();
+                    if (addDataList.size() > numSeats) {
+                        int addNum = (addDataList.size() + numSeats - 1) / numSeats;
+                        Kmeans addKmeans = new Kmeans(addNum, addDataList);
+                        List<ClusterO> clusterOSAddition = addKmeans.classify();
+                        newClusters.remove(clusterO);
+                        newClusters.addAll(clusterOSAddition);
+//                        numCluster = numCluster + addNum;
+                    }
+
+                }
+                clusterOS = newClusters;
+                int index = 1;
+                for (ClusterO clusterO : clusterOS) {
+                    List<Data> addDataList = clusterO.getClusterDataList();
+                    if (addDataList.size() > numSeats) {
+                        notDone = true;
+                    } else {
+                        clusterO.setId(String.valueOf(index));
+                        index += 1;
+                    }
+                }
+            }
+            numCluster = clusterOS.size();
+            int count = 0;
+            for (ClusterO clusterO : clusterOS) {
+                count += clusterO.getClusterDataList().size();
+            }
+            System.out.println("======TOTAL STUDENTS========:" + count);
 
 //            kMeansCluster();
 //            //Calculate to centroids
@@ -371,7 +416,7 @@ public class Main implements ActionListener {
 //                }
 //
 //            }
-            JOptionPane.showMessageDialog(frame, "Success");
+            JOptionPane.showMessageDialog(frame, "Đã phân cụm với số tâm cụm bằng : " + numCluster);
 
         } else if (e.getSource() == showClusterButton) {
             showDataClusters();
