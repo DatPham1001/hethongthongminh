@@ -21,10 +21,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.model.ClusterO;
-import org.example.model.Data;
-import org.example.model.GeoAddressData;
-import org.example.model.GeoAddressResponse;
+import org.example.model.*;
 import weka.clusterers.SimpleKMeans;
 import weka.core.*;
 
@@ -83,7 +80,8 @@ public class Main implements ActionListener {
     }
 
     private void initialize() {
-        Data[] datas = gson.fromJson("[{\"id\":\"1\",\"name\":\"Nguyễn Hữu Ánh\",\"address\":\"Số nhà 45, ngõ 120, Láng Hạ, Đống Đa, Hà Nội\",\"longitude\":21.013289547968125,\"latitude\":105.81032244281,\"distance\":4.4},{\"id\":\"2\",\"name\":\"Phạm Thu Hà\",\"address\":\"Số nhà 10, ngõ 172,Pháo Đài Láng, Đống Đa, Hà Nội\",\"longitude\":21.02216340050488,\"latitude\":105.806701408824,\"distance\":4.8},{\"id\":\"3\",\"name\":\"Trần Thanh Tùng\",\"address\":\"Số nhà 17, ngõ 3, Kim Mã, Ba Đình, Hà Nội\",\"longitude\":21.033295824229658,\"latitude\":105.822305878556,\"distance\":3.2},{\"id\":\"4\",\"name\":\"Nguyễn Thị Thanh\",\"address\":\"Số nhà 102, đường Cầu Giấy, Cầu Giấy, Hà Nội\",\"longitude\":21.035279463982057,\"latitude\":105.791127076644,\"distance\":6.8},{\"id\":\"5\",\"name\":\"Trần Văn Đông\",\"address\":\"Số nhà 87, đường Nguyễn Khánh Toàn, Cầu Giấy, Hà Nội\",\"longitude\":21.043626214736467,\"latitude\":105.795255224729,\"distance\":5.7},{\"id\":\"6\",\"name\":\"Vũ Thị Anh\",\"address\":\"Số nhà 56, đường Trần Hưng Đạo, Hoàn Kiếm, Hà Nội\",\"longitude\":21.024991980344527,\"latitude\":105.844420055303,\"distance\":2.5},{\"id\":\"7\",\"name\":\"Lê Thị Lan\",\"address\":\"Số nhà 34, ngõ 163, Tây Sơn, Đống Đa, Hà Nội\",\"longitude\":21.02040270485661,\"latitude\":105.812927288679,\"distance\":3.6},{\"id\":\"8\",\"name\":\"Đỗ Minh Hiền\",\"address\":\"Số nhà 49, ngõ 12, Đặng Thai Mai, Tây Hồ, Hà Nội\",\"longitude\":21.049874313087408,\"latitude\":105.827454503227,\"distance\":5.2},{\"id\":\"9\",\"name\":\"Hoàng Văn Nam\",\"address\":\"Số nhà 34, ngõ 44, phố Lê Văn Thiêm, Nhân Chính, Thanh Xuân, Hà Nội\",\"longitude\":21.005800856669975,\"latitude\":105.801562186119,\"distance\":3.9},{\"id\":\"10\",\"name\":\"Tuyết Ngân Vương\",\"address\":\"64 Nguyễn Trãi, Thanh Xuân, Hà Nội\",\"longitude\":21.004989829364796,\"latitude\":105.8141240628,\"distance\":4.3},{\"id\":\"11\",\"name\":\"Trúc Mai Lâm\",\"address\":\"12 Ngõ 87 Láng Hạ, Đống Đa, Hà Nội\",\"longitude\":21.008847514699834,\"latitude\":105.812843463,\"distance\":3.9},{\"id\":\"12\",\"name\":\"Đình Duy Nguyễn\",\"address\":\"29 Võ Chí Công, Xuân La, Tây Hồ, Hà Nội\",\"longitude\":21.06745471409359,\"latitude\":105.8029101701,\"distance\":5.9},{\"id\":\"13\",\"name\":\"Minh Châu Hồ\",\"address\":\"23B Ngõ 3/54, Tổ 11, Phố Vọng, Hai Bà Trưng, Hà Nội\",\"longitude\":20.998898210732417,\"latitude\":105.843757166,\"distance\":4.1},{\"id\":\"14\",\"name\":\"Ngọc Minh Đặng\",\"address\":\"19 Ngõ 93 Lò Đúc, Hai Bà Trưng, Hà Nội\",\"longitude\":21.00797749264913,\"latitude\":105.856252953,\"distance\":3.2},{\"id\":\"15\",\"name\":\"Quỳnh Anh Lý\",\"address\":\"102 Nguyễn Trãi, Thanh Xuân, Hà Nội\",\"longitude\":20.99535809979263,\"latitude\":105.81500733,\"distance\":5.2},{\"id\":\"16\",\"name\":\"Thịnh Duy Võ\",\"address\":\"35 Ngõ 118 Trần Bình, Mai Dịch, Cầu Giấy, Hà Nội\",\"longitude\":21.0375533688712,\"latitude\":105.7873040835,\"distance\":5.6},{\"id\":\"17\",\"name\":\"Thu Hường Trần\",\"address\":\"3 Ngõ 12 Nguyễn Văn Ngọc, Giảng Võ, Ba Đình, Hà Nội\",\"longitude\":21.033303266055118,\"latitude\":105.81251213,\"distance\":4.4},{\"id\":\"18\",\"name\":\"Hoài Phương Ngô\",\"address\":\"30 Lương Định Của, Đống Đa, Hà Nội\",\"longitude\":21.02112194283696,\"latitude\":105.811295704,\"distance\":4.8},{\"id\":\"19\",\"name\":\"Văn Hiển Nguyễn\",\"address\":\"37B1 Nguyễn Phong Sắc, Cầu Giấy, Hà Nội\",\"longitude\":21.03733321907321,\"latitude\":105.793096151,\"distance\":5.5},{\"id\":\"20\",\"name\":\"Bạch Trung Ngân\",\"address\":\"15 Đàm Quang Trung, Thanh Lương, Hai Bà Trưng, Hà Nội\",\"longitude\":21.005207223010316,\"latitude\":105.851051968269,\"distance\":1.92},{\"id\":\"21\",\"name\":\"Văn Thị Hiền\",\"address\":\"41/320 Đường Láng, Láng Thượng, Đống Đa, Hà Nội\",\"longitude\":21.031639642224583,\"latitude\":105.80130106854,\"distance\":4.38}]", Data[].class);
+        Data[] datas = gson.fromJson("[{\"id\":\"1\",\"name\":\"Nguyễn Hữu Ánh\",\"address\":\"Số nhà 45, ngõ 120, Láng Hạ, Đống Đa, Hà Nội\",\"longitude\":105.81032244281,\"latitude\":21.013289547968125,\"distance\":4.4},{\"id\":\"2\",\"name\":\"Phạm Thu Hà\",\"address\":\"Số nhà 10, ngõ 172,Pháo Đài Láng, Đống Đa, Hà Nội\",\"longitude\":105.806701408824,\"latitude\":21.02216340050488,\"distance\":4.8},{\"id\":\"3\",\"name\":\"Trần Thanh Tùng\",\"address\":\"Số nhà 17, ngõ 3, Kim Mã, Ba Đình, Hà Nội\",\"longitude\":105.822305878556,\"latitude\":21.033295824229658,\"distance\":3.2},{\"id\":\"4\",\"name\":\"Nguyễn Thị Thanh\",\"address\":\"Số nhà 102, đường Cầu Giấy, Cầu Giấy, Hà Nội\",\"longitude\":105.791127076644,\"latitude\":21.035279463982057,\"distance\":6.8},{\"id\":\"5\",\"name\":\"Trần Văn Đông\",\"address\":\"Số nhà 87, đường Nguyễn Khánh Toàn, Cầu Giấy, Hà Nội\",\"longitude\":105.795255224729,\"latitude\":21.043626214736467,\"distance\":5.7},{\"id\":\"6\",\"name\":\"Vũ Thị Anh\",\"address\":\"Số nhà 56, đường Trần Hưng Đạo, Hoàn Kiếm, Hà Nội\",\"longitude\":105.844420055303,\"latitude\":21.024991980344527,\"distance\":2.5},{\"id\":\"7\",\"name\":\"Lê Thị Lan\",\"address\":\"Số nhà 34, ngõ 163, Tây Sơn, Đống Đa, Hà Nội\",\"longitude\":105.812927288679,\"latitude\":21.02040270485661,\"distance\":3.6},{\"id\":\"8\",\"name\":\"Đỗ Minh Hiền\",\"address\":\"Số nhà 49, ngõ 12, Đặng Thai Mai, Tây Hồ, Hà Nội\",\"longitude\":105.827454503227,\"latitude\":21.049874313087408,\"distance\":5.2},{\"id\":\"9\",\"name\":\"Hoàng Văn Nam\",\"address\":\"Số nhà 34, ngõ 44, phố Lê Văn Thiêm, Nhân Chính, Thanh Xuân, Hà Nội\",\"longitude\":105.801562186119,\"latitude\":21.005800856669975,\"distance\":3.9},{\"id\":\"10\",\"name\":\"Tuyết Ngân Vương\",\"address\":\"64 Nguyễn Trãi, Thanh Xuân, Hà Nội\",\"longitude\":105.8141240628,\"latitude\":21.004989829364796,\"distance\":4.3},{\"id\":\"11\",\"name\":\"Trúc Mai Lâm\",\"address\":\"12 Ngõ 87 Láng Hạ, Đống Đa, Hà Nội\",\"longitude\":105.812843463,\"latitude\":21.008847514699834,\"distance\":3.9},{\"id\":\"12\",\"name\":\"Đình Duy Nguyễn\",\"address\":\"29 Võ Chí Công, Xuân La, Tây Hồ, Hà Nội\",\"longitude\":105.8029101701,\"latitude\":21.06745471409359,\"distance\":5.9},{\"id\":\"13\",\"name\":\"Minh Châu Hồ\",\"address\":\"23B Ngõ 3/54, Tổ 11, Phố Vọng, Hai Bà Trưng, Hà Nội\",\"longitude\":105.843757166,\"latitude\":20.998898210732417,\"distance\":4.1}]"
+                ,Data[].class);
         dataList = new ArrayList<Data>(Arrays.asList(datas));
         frame = new JFrame();
         frame.setBounds(400, 250, 800, 500);
@@ -258,7 +256,7 @@ public class Main implements ActionListener {
         model.addColumn("Địa chỉ");
         model.addColumn("Kinh độ");
         model.addColumn("Vĩ độ");
-        model.addColumn("Khoảng cách tâm");
+        model.addColumn("Khoảng cách tâm tới tâm");
 
         for (ClusterO clusterO : clusterOS) {
             List<Data> dataList = clusterO.getClusterDataList();
@@ -350,26 +348,29 @@ public class Main implements ActionListener {
             // Lấy số lượng cụm và khoảng cách từ các trường nhập liệu
 //            int numCluster = Integer.parseInt(numClusterField.getText());
 //            double distance = Double.parseDouble(distanceField.getText());
-            clusterOS = new ArrayList<>();
-            kMeansCluster();
-            //Calculate to centroids
-            for (ClusterO clusterO : clusterOS) {
-                double centLong = clusterO.getLongitude();
-                double centLat = clusterO.getLatitude();
-                for (Data data : clusterO.getClusterDataList()) {
-                    double distance = calculateDistance(centLat, centLong, data.getLatitude(), data.getLongitude());
-                    long distanceM = Math.round(distance * 1000);
-                    data.setDistance(distanceM);
-//                    if (distanceM > distanceThreshold) {
-//                        numCluster = numCluster + 1;
-//                        clusterOS = new ArrayList<>();
-//                        kMeansCluster();
-//                        frame.revalidate();
-//                        frame.repaint();
-//                    }
-                }
+//            clusterOS = new ArrayList<>();
+            Kmeans kmeans = new Kmeans(numCluster,dataList);
+            clusterOS = kmeans.classify();
 
-            }
+//            kMeansCluster();
+//            //Calculate to centroids
+//            for (ClusterO clusterO : clusterOS) {
+//                double centLong = clusterO.getLongitude();
+//                double centLat = clusterO.getLatitude();
+//                for (Data data : clusterO.getClusterDataList()) {
+//                    double distance = calculateDistance(centLat, centLong, data.getLatitude(), data.getLongitude());
+//                    long distanceM = Math.round(distance * 1000);
+//                    data.setDistance(distanceM);
+////                    if (distanceM > distanceThreshold) {
+////                        numCluster = numCluster + 1;
+////                        clusterOS = new ArrayList<>();
+////                        kMeansCluster();
+////                        frame.revalidate();
+////                        frame.repaint();
+////                    }
+//                }
+//
+//            }
             JOptionPane.showMessageDialog(frame, "Success");
 
         } else if (e.getSource() == showClusterButton) {
