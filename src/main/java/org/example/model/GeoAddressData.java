@@ -19,4 +19,9 @@ public class GeoAddressData {
     public void setFormatted_address(String formatted_address) {
         this.formatted_address = formatted_address;
     }
+
+    @Override
+    public String toString() {
+        return formatted_address;
+    }
 }

@@ -30,9 +30,13 @@ import javax.net.ssl.SSLContext;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -61,7 +65,7 @@ public class Main implements ActionListener {
     private String mapUrl = "https://www.google.com/maps/dir";
     private static String API_KEY = "lGAhx8EUsijWwm0ck5ORJgTMWzb1wAkh5cBVf7xv";
     private String targetCoordinate = "21.005038,105.845630";
-
+    private JComboBox<String> comboBox;
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -117,16 +121,19 @@ public class Main implements ActionListener {
         distanceField = new JTextField(String.valueOf(maxDistanceToCentroid));
         distanceField.setPreferredSize(new Dimension(100, 20));
 
+//        JLabel numSeatsLabel = new JLabel("Number of seats:");
         JLabel numSeatsLabel = new JLabel("Number of seats:");
-        numSeatsField = new JTextField(String.valueOf(numSeats));
-        numSeatsField.setPreferredSize(new Dimension(100, 20));
-
+//        numSeatsField = new JTextField(String.valueOf(numSeats));
+//        numSeatsField.setPreferredSize(new Dimension(100, 20));
+        String[] options = {"16", "21", "29"};
+comboBox = new JComboBox<>(options);
 
         applyButton = new JButton("Apply");
         applyButton.addActionListener(this);
 
         configPanel.add(numSeatsLabel);
-        configPanel.add(numSeatsField);
+        configPanel.add(comboBox);
+//        configPanel.add(numSeatsField);
         configPanel.add(distanceToCentroidLabel);
         configPanel.add(distanceField);
         configPanel.add(applyButton);
@@ -307,7 +314,6 @@ public class Main implements ActionListener {
     }
 
     private void showDataClustersInfo() {
-        JTable table = new JTable();
         DefaultTableModel model = new DefaultTableModel();
         model.addColumn("ID");
         model.addColumn("Địa chỉ cụm");
@@ -315,18 +321,39 @@ public class Main implements ActionListener {
         model.addColumn("Vĩ Độ Cụm");
         model.addColumn("Số Lượng Đón");
         model.addColumn("Khoảng cách tới trường");
+        model.addColumn("Action");
 
         for (ClusterO clusterO : clusterOS) {
-            Object[] row = new Object[6];
+            Object[] row = new Object[7];
             row[0] = clusterO.getId();
             row[1] = clusterO.getAddress();
             row[2] = clusterO.getLongitude();
             row[3] = clusterO.getLatitude();
             row[4] = clusterO.getClusterDataList().size();
             row[5] = clusterO.getDistanceToTarget();
+            row[6] = "Button";
             model.addRow(row);
         }
-        table.setModel(model);
+        JTable table = new JTable(model) {
+            @Override
+            public TableCellRenderer getCellRenderer(int row, int column) {
+                if (column == 6) {
+                    return new ButtonRenderer();
+                } else {
+                    return super.getCellRenderer(row, column);
+                }
+            }
+
+            @Override
+            public TableCellEditor getCellEditor(int row, int column) {
+                if (column == 6) {
+                    return new ButtonEditor(frame, clusterOS.get(row));
+                } else {
+                    return super.getCellEditor(row, column);
+                }
+            }
+        };
+
         // Tạo cửa sổ dialog
         JDialog dialog = new JDialog(frame, "Dữ liệu phân cụm", true);
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -347,7 +374,9 @@ public class Main implements ActionListener {
             showData();
         } else if (e.getSource() == applyButton) {
             try {
-                numSeats = Integer.parseInt(numSeatsField.getText());
+                String selectedOption = (String) comboBox.getSelectedItem();
+                numSeats = Integer.parseInt(selectedOption);
+//                numSeats = Integer.parseInt(numSeatsField.getText());
                 maxDistanceToCentroid = Double.parseDouble(distanceField.getText());
                 // Thực hiện các thao tác liên quan đến việc sử dụng các tham số
                 // Như phân cụm bằng thuật toán Kmean với số lượng tâm cụm và khoảng cách cần thiết
@@ -363,7 +392,7 @@ public class Main implements ActionListener {
 //            clusterOS = new ArrayList<>();
 //            List<ClusterListMaster> clusterListMaster = new ArrayList<>();
 //            for (int i = 0; i < 10; i++) {
-            if(dataList.size() == 0){
+            if (dataList.size() == 0) {
                 JOptionPane.showMessageDialog(frame, "Chưa import dữ liệu");
                 return;
             }
@@ -371,6 +400,7 @@ public class Main implements ActionListener {
             numCluster = (data.size() + numSeats - 1) / numSeats;
             Kmeans kmeans = new Kmeans(numCluster, data);
             List<ClusterO> clusterOSTemp = kmeans.classify();
+            clusterOS = clusterOSTemp;
             checkSeats();
             checkDistance();
 
